@@ -1,3 +1,4 @@
+import duckdb
 import shutil
 import pathlib
 import requests
@@ -76,7 +77,7 @@ def delete_all_in_folder(folder_path):
         except Exception as e:
             print(f'Failed to delete {file_path}. Reason: {e}')
 
-def download_and_transform_data(dataset_name: str):
+def download_and_transform_data(dataset_name: str, db_con: duckdb.DuckDBPyConnection):
     url = dataset_url_dictionary[dataset_name]
     destination = pathlib.Path('data')
     if os.path.exists(destination / dataset_name):
@@ -84,4 +85,32 @@ def download_and_transform_data(dataset_name: str):
 
     download_extract_zip(url=url, destination=destination, folder_name=dataset_name)
     filename = dataset_name + '.parquet'
-    combine_csv_to_parquet(destination / dataset_name,destination / dataset_name / filename)
+    parquet_dir = destination / dataset_name / filename
+    combine_csv_to_parquet(destination / dataset_name,parquet_dir)
+    con = create_table_from_parquet(
+        parquet_dir=parquet_dir, 
+        dataset_name=dataset_name,
+        db_con=db_con
+    )
+    return con
+
+def create_table_from_parquet(parquet_dir: pathlib.Path, dataset_name: str, db_con:duckdb.DuckDBPyConnection):
+    """
+    It's possible that we will replace this function and it's calling with a remotely hosted parquet
+
+    Args:
+        parquet_dir (pathlib.Path): location of the parquet file
+        dataset_name (str): name of dataset
+    """
+
+    filename = dataset_name + '.db'
+    db_path = parquet_dir.parent / filename
+    if os.path.exists(db_path):
+        os.remove(db_path)
+    
+    db_con.execute(f"CREATE TABLE {dataset_name} AS SELECT * FROM parquet_scan('{parquet_dir}')")
+    db_con.execute(f"SELECT * FROM {dataset_name}").fetchall()
+    print(f'Created table called {dataset_name} to query the data')
+    return None
+
+    

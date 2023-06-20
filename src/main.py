@@ -8,7 +8,6 @@ import pyarrow
 import duckdb
 import pathlib 
 import sys
-conn = duckdb.connect()
 
 
 current_dir = os.path.dirname(os.path.abspath(__file__))
@@ -17,8 +16,7 @@ sys.path.append(current_dir)
 
 from data_ingestion import preprocessing
 
-preprocessing.download_and_transform_data('HES_A_E_sample')
-conn = duckdb.connect('my_db.db')
+conn = preprocessing.download_and_transform_data('HES_A_E_sample')
 
 # current_dir = os.path.dirname(os.path.abspath(__file__))))
 # conn.execute(f"CREATE TABLE my_table AS SELECT * FROM parquet_scan('{parquet_path}')")
