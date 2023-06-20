@@ -11,16 +11,14 @@ import sys
 conn = duckdb.connect()
 
 
-
 current_dir = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(current_dir)
 
-conn = duckdb.connect('my_db.db')
 
-parquet_path =  pathlib.Path('data/artificial_hes_ae_202302_v1_sample/sample.parquet')
-if os.path.exists(parquet_path):
-    print('yes')
-print(os.listdir('data/artificial_hes_ae_202302_v1_sample'))
+from data_ingestion import preprocessing
+
+preprocessing.download_and_transform_data('HES_A_E_sample')
+conn = duckdb.connect('my_db.db')
 
 # current_dir = os.path.dirname(os.path.abspath(__file__))))
 # conn.execute(f"CREATE TABLE my_table AS SELECT * FROM parquet_scan('{parquet_path}')")
