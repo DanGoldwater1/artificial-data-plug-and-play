@@ -113,4 +113,7 @@ def create_table_from_parquet(parquet_dir: pathlib.Path, dataset_name: str, db_c
     print(f'Created table called {dataset_name} to query the data')
     return None
 
+
+
+
     
